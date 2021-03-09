@@ -13,30 +13,33 @@ import (
 )
 
 const (
-	IntervalMin1  string = "1min"
-	IntervalMin2  string = "2min"
-	IntervalMin3  string = "3min"
-	IntervalMin5  string = "5min"
-	IntervalMin10 string = "10min"
-	IntervalMin15 string = "15min"
-	IntervalMin30 string = "30min"
-	IntervalHour  string = "hour"
-	IntervalDay   string = "day"
-	IntervalWeek  string = "week"
-	IntervalMonth string = "month"
-	OperationBuy  string = "Buy"
-	OperationSell string = "Sell"
-	CurrencyRUB          = "RUB"
-	CurrencyUSD          = "USD"
-	TickerTCS            = "TCS"
-	TickerTCSG           = "TCSG"
-	FigiTCS              = "BBG005DXJS36"
-	FigiTCSG             = "BBG00QPYJ5H0"
+	IntervalMin1    = "1min"
+	IntervalMin2    = "2min"
+	IntervalMin3    = "3min"
+	IntervalMin5    = "5min"
+	IntervalMin10   = "10m  in"
+	IntervalMin15   = "15min"
+	IntervalMin30   = "30min"
+	IntervalHour    = "hour"
+	IntervalDay     = "day"
+	IntervalWeek    = "week"
+	IntervalMonth   = "month"
+	OperationBuy    = "Buy"
+	OperationSell   = "Sell"
+	CurrencyRUB     = "RUB"
+	CurrencyUSD     = "USD"
+	TickerTCS       = "TCS"
+	TickerTCSG      = "TCSG"
+	FigiTCS         = "BBG005DXJS36"
+	FigiTCSG        = "BBG00QPYJ5H0"
+	statusError     = "Error"
+	orderTypeLimit  = "limit"
+	orderTypeMarket = "market"
 )
 
 type Client struct {
-	url   string
-	token string
+	mvUrl   string
+	mvToken string
 }
 
 type Account struct {
@@ -121,24 +124,24 @@ type Order struct {
 
 func (self *Client) Init(token string) {
 
-	self.url = "https://api-invest.tinkoff.ru/openapi/"
-	self.token = token
+	self.mvUrl = "https://api-invest.tinkoff.ru/openapi/"
+	self.mvToken = token
 
 }
 
 func (self *Client) GetAccounts() (rtAccounts []Account, roError error) {
 
-	lvUrl := self.url + "user/accounts"
+	lvUrl := self.mvUrl + "user/accounts"
 
 	loClient := http.Client{}
 
-	loRequest, roError := http.NewRequest("GET", lvUrl, nil)
+	loRequest, roError := http.NewRequest(http.MethodGet, lvUrl, nil)
 
 	if roError != nil {
 		return
 	}
 
-	loRequest.Header.Add("Authorization", "Bearer "+self.token)
+	loRequest.Header.Add("Authorization", "Bearer "+self.mvToken)
 
 	loResponse, roError := loClient.Do(loRequest)
 
@@ -173,7 +176,7 @@ func (self *Client) GetAccounts() (rtAccounts []Account, roError error) {
 		return
 	}
 
-	if lsResponse.Status == "Error" {
+	if lsResponse.Status == statusError {
 		roError = errors.New(lsResponse.Payload.Message)
 		return
 	}
@@ -227,17 +230,17 @@ func (self *Client) GetETFs() (rtETFs []Instrument, roError error) {
 
 func (self *Client) getInstruments(ivType string) (rtInstruments []Instrument, roError error) {
 
-	lvUrl := self.url + "market/" + ivType
+	lvUrl := self.mvUrl + "market/" + ivType
 
 	loClient := http.Client{}
 
-	loRequest, roError := http.NewRequest("GET", lvUrl, nil)
+	loRequest, roError := http.NewRequest(http.MethodGet, lvUrl, nil)
 
 	if roError != nil {
 		return
 	}
 
-	loRequest.Header.Add("Authorization", "Bearer "+self.token)
+	loRequest.Header.Add("Authorization", "Bearer "+self.mvToken)
 
 	loResponse, roError := loClient.Do(loRequest)
 
@@ -282,7 +285,7 @@ func (self *Client) getInstruments(ivType string) (rtInstruments []Instrument, r
 
 	//log.Println(string(lvBodyBytes))
 
-	if lsResponse.Status == "Error" {
+	if lsResponse.Status == statusError {
 		roError = errors.New(lsResponse.Payload.Message)
 		return
 	}
@@ -317,17 +320,17 @@ func (self *Client) GetInstrumentByTicker(ivTicker string) (rsInstrument Instrum
 
 	loParams.Add("ticker", ivTicker)
 
-	lvUrl := self.url + "/market/search/by-ticker?" + loParams.Encode()
+	lvUrl := self.mvUrl + "/market/search/by-ticker?" + loParams.Encode()
 
 	loClient := http.Client{}
 
-	loRequest, roError := http.NewRequest("GET", lvUrl, nil)
+	loRequest, roError := http.NewRequest(http.MethodGet, lvUrl, nil)
 
 	if roError != nil {
 		return
 	}
 
-	loRequest.Header.Add("Authorization", "Bearer "+self.token)
+	loRequest.Header.Add("Authorization", "Bearer "+self.mvToken)
 
 	loResponse, roError := loClient.Do(loRequest)
 
@@ -372,7 +375,7 @@ func (self *Client) GetInstrumentByTicker(ivTicker string) (rsInstrument Instrum
 
 	//log.Println(string(lvBodyBytes))
 
-	if lsResponse.Status == "Error" {
+	if lsResponse.Status == statusError {
 		roError = errors.New(lsResponse.Payload.Message)
 		return
 	}
@@ -401,17 +404,17 @@ func (self *Client) GetInstrumentByFIGI(ivFIGI string) (rsInstrument Instrument,
 
 	loParams.Add("figi", ivFIGI)
 
-	lvUrl := self.url + "/market/search/by-figi?" + loParams.Encode()
+	lvUrl := self.mvUrl + "/market/search/by-figi?" + loParams.Encode()
 
 	loClient := http.Client{}
 
-	loRequest, roError := http.NewRequest("GET", lvUrl, nil)
+	loRequest, roError := http.NewRequest(http.MethodGet, lvUrl, nil)
 
 	if roError != nil {
 		return
 	}
 
-	loRequest.Header.Add("Authorization", "Bearer "+self.token)
+	loRequest.Header.Add("Authorization", "Bearer "+self.mvToken)
 
 	loResponse, roError := loClient.Do(loRequest)
 
@@ -452,7 +455,7 @@ func (self *Client) GetInstrumentByFIGI(ivFIGI string) (rsInstrument Instrument,
 
 	//log.Println(string(lvBodyBytes))
 
-	if lsResponse.Status == "Error" {
+	if lsResponse.Status == statusError {
 		roError = errors.New(lsResponse.Payload.Message)
 		return
 	}
@@ -484,17 +487,17 @@ func (self *Client) GetCandles(ivTicker string, ivInterval string, ivFrom time.T
 	loParams.Add("from", ivFrom.Format(time.RFC3339))
 	loParams.Add("to", ivTo.Format(time.RFC3339))
 
-	lvUrl := self.url + "market/candles?" + loParams.Encode()
+	lvUrl := self.mvUrl + "market/candles?" + loParams.Encode()
 
 	loClient := http.Client{}
 
-	loRequest, roError := http.NewRequest("GET", lvUrl, nil)
+	loRequest, roError := http.NewRequest(http.MethodGet, lvUrl, nil)
 
 	if roError != nil {
 		return
 	}
 
-	loRequest.Header.Add("Authorization", "Bearer "+self.token)
+	loRequest.Header.Add("Authorization", "Bearer "+self.mvToken)
 
 	loResponse, roError := loClient.Do(loRequest)
 
@@ -537,9 +540,8 @@ func (self *Client) GetCandles(ivTicker string, ivInterval string, ivFrom time.T
 		return
 	}
 
-	//log.Println(string(lvBodyBytes))
 
-	if lsResponse.Status == "Error" {
+	if lsResponse.Status == statusError {
 		roError = errors.New(lsResponse.Payload.Message)
 		return
 	}
@@ -567,17 +569,17 @@ func (self *Client) GetCandles(ivTicker string, ivInterval string, ivFrom time.T
 
 func (self *Client) GetPositions() (rtPositions []Position, roError error) {
 
-	lvUrl := self.url + "portfolio"
+	lvUrl := self.mvUrl + "portfolio"
 
 	loClient := http.Client{}
 
-	loRequest, roError := http.NewRequest("GET", lvUrl, nil)
+	loRequest, roError := http.NewRequest(http.MethodGet, lvUrl, nil)
 
 	if roError != nil {
 		return
 	}
 
-	loRequest.Header.Add("Authorization", "Bearer "+self.token)
+	loRequest.Header.Add("Authorization", "Bearer "+self.mvToken)
 
 	loResponse, roError := loClient.Do(loRequest)
 
@@ -632,7 +634,7 @@ func (self *Client) GetPositions() (rtPositions []Position, roError error) {
 
 	//log.Println(string(lvBodyBytes))
 
-	if lsResponse.Status == "Error" {
+	if lsResponse.Status == statusError {
 		roError = errors.New(lsResponse.Payload.Message)
 		return
 	}
@@ -684,17 +686,17 @@ func (self *Client) GetOperations(ivTicker string, ivFrom time.Time, ivTo time.T
 
 	}
 
-	lvUrl := self.url + "operations?" + loParams.Encode()
+	lvUrl := self.mvUrl + "operations?" + loParams.Encode()
 
 	loClient := http.Client{}
 
-	loRequest, roError := http.NewRequest("GET", lvUrl, nil)
+	loRequest, roError := http.NewRequest(http.MethodGet, lvUrl, nil)
 
 	if roError != nil {
 		return
 	}
 
-	loRequest.Header.Add("Authorization", "Bearer "+self.token)
+	loRequest.Header.Add("Authorization", "Bearer "+self.mvToken)
 
 	loResponse, roError := loClient.Do(loRequest)
 
@@ -749,7 +751,7 @@ func (self *Client) GetOperations(ivTicker string, ivFrom time.Time, ivTo time.T
 		return
 	}
 
-	if lsResponse.Status == "Error" {
+	if lsResponse.Status == statusError {
 		roError = errors.New(lsResponse.Payload.Message)
 		return
 	}
@@ -818,17 +820,17 @@ func (self *Client) GetOperations(ivTicker string, ivFrom time.Time, ivTo time.T
 
 func (self *Client) GetOrders() (rtOrders []Order, roError error) {
 
-	lvUrl := self.url + "orders"
+	lvUrl := self.mvUrl + "orders"
 
 	loClient := http.Client{}
 
-	loRequest, roError := http.NewRequest("GET", lvUrl, nil)
+	loRequest, roError := http.NewRequest(http.MethodGet, lvUrl, nil)
 
 	if roError != nil {
 		return
 	}
 
-	loRequest.Header.Add("Authorization", "Bearer "+self.token)
+	loRequest.Header.Add("Authorization", "Bearer "+self.mvToken)
 
 	loResponse, roError := loClient.Do(loRequest)
 
@@ -879,7 +881,7 @@ func (self *Client) GetOrders() (rtOrders []Order, roError error) {
 		return
 	}
 
-	if lsResponseGeneric.Status == "Error" {
+	if lsResponseGeneric.Status == statusError {
 
 		lsResponseError := ltsResponseError{}
 
@@ -926,7 +928,7 @@ func (self *Client) GetOrders() (rtOrders []Order, roError error) {
 
 func (self *Client) CreateLimitOrder(ivTicker string, ivOperation string, ivLots int, ivPrice float64) (rvOrderID string, roError error) {
 
-	rvOrderID, roError = self.createOrder("limit", ivTicker, ivOperation, ivLots, ivPrice)
+	rvOrderID, roError = self.createOrder(orderTypeLimit, ivTicker, ivOperation, ivLots, ivPrice)
 
 	return
 
@@ -934,7 +936,7 @@ func (self *Client) CreateLimitOrder(ivTicker string, ivOperation string, ivLots
 
 func (self *Client) CreateMarketOrder(ivTicker string, ivOperation string, ivLots int) (rvOrderID string, roError error) {
 
-	rvOrderID, roError = self.createOrder("market", ivTicker, ivOperation, ivLots, 0)
+	rvOrderID, roError = self.createOrder(orderTypeMarket, ivTicker, ivOperation, ivLots, 0)
 
 	return
 
@@ -952,7 +954,7 @@ func (self *Client) createOrder(ivType string, ivTicker string, ivOperation stri
 
 	loParams.Add("figi", loInstrument.FIGI)
 
-	lvUrl := self.url + "orders/" + ivType + "-order?" + loParams.Encode()
+	lvUrl := self.mvUrl + "orders/" + ivType + "-order?" + loParams.Encode()
 
 	type ltsBody struct {
 		Operation string  `json:"operation"`
@@ -974,13 +976,13 @@ func (self *Client) createOrder(ivType string, ivTicker string, ivOperation stri
 
 	loClient := http.Client{}
 
-	loRequest, roError := http.NewRequest("POST", lvUrl, bytes.NewBuffer(lvBodyJsonBytes))
+	loRequest, roError := http.NewRequest(http.MethodPost, lvUrl, bytes.NewBuffer(lvBodyJsonBytes))
 
 	if roError != nil {
 		return
 	}
 
-	loRequest.Header.Add("Authorization", "Bearer "+self.token)
+	loRequest.Header.Add("Authorization", "Bearer "+self.mvToken)
 
 	loResponse, roError := loClient.Do(loRequest)
 
@@ -1020,7 +1022,7 @@ func (self *Client) createOrder(ivType string, ivTicker string, ivOperation stri
 		return
 	}
 
-	if lsResponse.Status == "Error" {
+	if lsResponse.Status == statusError {
 		roError = errors.New(lsResponse.Payload.Message)
 		return
 	}
@@ -1037,17 +1039,17 @@ func (self *Client) CancelOrder(ivOrderID string) (roError error) {
 
 	loParams.Add("orderId", ivOrderID)
 
-	lvUrl := self.url + "orders/cancel?" + loParams.Encode()
+	lvUrl := self.mvUrl + "orders/cancel?" + loParams.Encode()
 
 	loClient := http.Client{}
 
-	loRequest, roError := http.NewRequest("POST", lvUrl, nil)
+	loRequest, roError := http.NewRequest(http.MethodGet, lvUrl, nil)
 
 	if roError != nil {
 		return
 	}
 
-	loRequest.Header.Add("Authorization", "Bearer "+self.token)
+	loRequest.Header.Add("Authorization", "Bearer "+self.mvToken)
 
 	loResponse, roError := loClient.Do(loRequest)
 
@@ -1078,7 +1080,7 @@ func (self *Client) CancelOrder(ivOrderID string) (roError error) {
 		return
 	}
 
-	if lsResponse.Status == "Error" {
+	if lsResponse.Status == statusError {
 		roError = errors.New(lsResponse.Payload.Message)
 		return
 	}
