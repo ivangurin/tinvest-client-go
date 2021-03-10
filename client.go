@@ -160,6 +160,8 @@ func (self *Client) GetAccounts() (rtAccounts []Account, roError error) {
 		return
 	}
 
+	defer loResponse.Body.Close()
+
 	lvBodyBytes, roError := io.ReadAll(loResponse.Body)
 
 	if roError != nil {
@@ -259,6 +261,8 @@ func (self *Client) getInstruments(ivType string) (rtInstruments []Instrument, r
 		return
 	}
 
+	defer loResponse.Body.Close()
+
 	lvBodyBytes, roError := io.ReadAll(loResponse.Body)
 
 	if roError != nil {
@@ -347,6 +351,8 @@ func (self *Client) GetInstrumentByTicker(ivTicker string) (rsInstrument Instrum
 		return
 	}
 
+	defer loResponse.Body.Close()
+
 	lvBodyBytes, roError := io.ReadAll(loResponse.Body)
 
 	if roError != nil {
@@ -429,6 +435,8 @@ func (self *Client) GetInstrumentByFIGI(ivFIGI string) (rsInstrument Instrument,
 		return
 	}
 
+	defer loResponse.Body.Close()
+
 	lvBodyBytes, roError := io.ReadAll(loResponse.Body)
 
 	if roError != nil {
@@ -510,6 +518,8 @@ func (self *Client) GetCandles(ivTicker string, ivInterval string, ivFrom time.T
 		return
 	}
 
+	defer loResponse.Body.Close()
+
 	lvBodyBytes, roError := io.ReadAll(loResponse.Body)
 
 	if roError != nil {
@@ -590,6 +600,8 @@ func (self *Client) GetPositions() (rtPositions []Position, roError error) {
 	if roError != nil {
 		return
 	}
+
+	defer loResponse.Body.Close()
 
 	lvBodyBytes, roError := io.ReadAll(loResponse.Body)
 
@@ -706,6 +718,8 @@ func (self *Client) GetOperations(ivTicker string, ivFrom time.Time, ivTo time.T
 	if roError != nil {
 		return
 	}
+
+	defer loResponse.Body.Close()
 
 	lvBodyBytes, roError := io.ReadAll(loResponse.Body)
 
@@ -840,6 +854,8 @@ func (self *Client) GetOrders() (rtOrders []Order, roError error) {
 	if roError != nil {
 		return
 	}
+
+	defer loResponse.Body.Close()
 
 	lvBodyBytes, roError := io.ReadAll(loResponse.Body)
 
@@ -993,6 +1009,8 @@ func (self *Client) createOrder(ivType string, ivTicker string, ivOperation stri
 		return
 	}
 
+	defer loResponse.Body.Close()
+
 	lvBodyBytes, roError := io.ReadAll(loResponse.Body)
 
 	if roError != nil {
@@ -1059,6 +1077,8 @@ func (self *Client) CancelOrder(ivOrderID string) (roError error) {
 	if roError != nil {
 		return
 	}
+
+	defer loResponse.Body.Close()
 
 	lvBodyBytes, roError := io.ReadAll(loResponse.Body)
 
