@@ -44,7 +44,7 @@ type Client struct {
 
 type Account struct {
 	ID   string
-	Type string
+	Text string
 }
 
 type Instrument struct {
@@ -186,7 +186,7 @@ func (self *Client) GetAccounts() (rtAccounts []Account, roError error) {
 		lsAccount := Account{}
 
 		lsAccount.ID = lsResponseAccount.BrokerAccountID
-		lsAccount.Type = lsResponseAccount.BrokerAccountType
+		lsAccount.Text = lsResponseAccount.BrokerAccountType
 
 		rtAccounts = append(rtAccounts, lsAccount)
 
@@ -283,8 +283,6 @@ func (self *Client) getInstruments(ivType string) (rtInstruments []Instrument, r
 		return
 	}
 
-	//log.Println(string(lvBodyBytes))
-
 	if lsResponse.Status == statusError {
 		roError = errors.New(lsResponse.Payload.Message)
 		return
@@ -373,8 +371,6 @@ func (self *Client) GetInstrumentByTicker(ivTicker string) (rsInstrument Instrum
 		return
 	}
 
-	//log.Println(string(lvBodyBytes))
-
 	if lsResponse.Status == statusError {
 		roError = errors.New(lsResponse.Payload.Message)
 		return
@@ -452,8 +448,6 @@ func (self *Client) GetInstrumentByFIGI(ivFIGI string) (rsInstrument Instrument,
 	if roError != nil {
 		return
 	}
-
-	//log.Println(string(lvBodyBytes))
 
 	if lsResponse.Status == statusError {
 		roError = errors.New(lsResponse.Payload.Message)
@@ -631,8 +625,6 @@ func (self *Client) GetPositions() (rtPositions []Position, roError error) {
 	if roError != nil {
 		return
 	}
-
-	//log.Println(string(lvBodyBytes))
 
 	if lsResponse.Status == statusError {
 		roError = errors.New(lsResponse.Payload.Message)
@@ -1043,7 +1035,7 @@ func (self *Client) CancelOrder(ivOrderID string) (roError error) {
 
 	loClient := http.Client{}
 
-	loRequest, roError := http.NewRequest(http.MethodGet, lvUrl, nil)
+	loRequest, roError := http.NewRequest(http.MethodPost, lvUrl, nil)
 
 	if roError != nil {
 		return
