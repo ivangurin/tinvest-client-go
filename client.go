@@ -784,21 +784,17 @@ func (self *Client) GetOperations(ivTicker string, ivFrom time.Time, ivTo time.T
 		}
 
 		if lsResponseOperation.OperationType != OperationBuy &&
-			lsResponseOperation.OperationType != operationBuyCard &&
+			lsResponseOperation.OperationType != OperationBuyCard &&
 			lsResponseOperation.OperationType != OperationSell &&
-			lsResponseOperation.OperationType != operationDividend &&
-			lsResponseOperation.OperationType != operationTaxDividend &&
-			lsResponseOperation.OperationType != operationCoupon &&
-			lsResponseOperation.OperationType != operationTaxCoupon {
+			lsResponseOperation.OperationType != OperationDividend &&
+			lsResponseOperation.OperationType != OperationTaxDividend &&
+			lsResponseOperation.OperationType != OperationCoupon &&
+			lsResponseOperation.OperationType != OperationTaxCoupon {
 			continue
 		}
 
 		if lsResponseOperation.Status != statusDone {
 			continue
-		}
-
-		if lsResponseOperation.OperationType == operationBuyCard {
-			lsResponseOperation.OperationType = OperationBuy
 		}
 
 		lsOperation := Operation{}
