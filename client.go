@@ -13,33 +13,38 @@ import (
 )
 
 const (
-	IntervalMin1         = "1min"
-	IntervalMin2         = "2min"
-	IntervalMin3         = "3min"
-	IntervalMin5         = "5min"
-	IntervalMin10        = "10min"
-	IntervalMin15        = "15min"
-	IntervalMin30        = "30min"
-	IntervalHour         = "hour"
-	IntervalDay          = "day"
-	IntervalWeek         = "week"
-	IntervalMonth        = "month"
-	OperationBuy         = "Buy"
-	OperationSell        = "Sell"
-	CurrencyRUB          = "RUB"
-	CurrencyUSD          = "USD"
-	TickerTCS            = "TCS"
-	TickerTCSG           = "TCSG"
-	FigiTCS              = "BBG005DXJS36"
-	FigiTCSG             = "BBG00QPYJ5H0"
-	statusError          = "Error"
-	statusDone           = "Done"
-	operationBuyCard     = "BuyCard"
-	operationDividend    = "Dividend"
-	operationTaxDividend = "TaxDividend"
-	operationCoupon      = "Coupon"
-	orderTypeLimit       = "limit"
-	orderTypeMarket      = "market"
+	IntervalMin1          = "1min"
+	IntervalMin2          = "2min"
+	IntervalMin3          = "3min"
+	IntervalMin5          = "5min"
+	IntervalMin10         = "10min"
+	IntervalMin15         = "15min"
+	IntervalMin30         = "30min"
+	IntervalHour          = "hour"
+	IntervalDay           = "day"
+	IntervalWeek          = "week"
+	IntervalMonth         = "month"
+	InstumentTypeCurrency = "Currency"
+	InstumentTypeShare    = "Stock"
+	InstumentTypeBond     = "Bond"
+	InstumentTypeETF      = "Etf"
+	OperationBuy          = "Buy"
+	OperationSell         = "Sell"
+	CurrencyRUB           = "RUB"
+	CurrencyUSD           = "USD"
+	TickerTCS             = "TCS"
+	TickerTCSG            = "TCSG"
+	FigiTCS               = "BBG005DXJS36"
+	FigiTCSG              = "BBG00QPYJ5H0"
+	statusError           = "Error"
+	statusDone            = "Done"
+	operationBuyCard      = "BuyCard"
+	operationDividend     = "Dividend"
+	operationTaxDividend  = "TaxDividend"
+	operationCoupon       = "Coupon"
+	operationTaxCoupon    = "TaxCoupon"
+	orderTypeLimit        = "limit"
+	orderTypeMarket       = "market"
 )
 
 type Client struct {
@@ -782,7 +787,8 @@ func (self *Client) GetOperations(ivTicker string, ivFrom time.Time, ivTo time.T
 			lsResponseOperation.OperationType != OperationSell &&
 			lsResponseOperation.OperationType != operationDividend &&
 			lsResponseOperation.OperationType != operationTaxDividend &&
-			lsResponseOperation.OperationType != operationCoupon {
+			lsResponseOperation.OperationType != operationCoupon &&
+			lsResponseOperation.OperationType != operationTaxCoupon {
 			continue
 		}
 
