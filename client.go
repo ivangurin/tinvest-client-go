@@ -13,28 +13,33 @@ import (
 )
 
 const (
-	IntervalMin1    = "1min"
-	IntervalMin2    = "2min"
-	IntervalMin3    = "3min"
-	IntervalMin5    = "5min"
-	IntervalMin10   = "10m  in"
-	IntervalMin15   = "15min"
-	IntervalMin30   = "30min"
-	IntervalHour    = "hour"
-	IntervalDay     = "day"
-	IntervalWeek    = "week"
-	IntervalMonth   = "month"
-	OperationBuy    = "Buy"
-	OperationSell   = "Sell"
-	CurrencyRUB     = "RUB"
-	CurrencyUSD     = "USD"
-	TickerTCS       = "TCS"
-	TickerTCSG      = "TCSG"
-	FigiTCS         = "BBG005DXJS36"
-	FigiTCSG        = "BBG00QPYJ5H0"
-	statusError     = "Error"
-	orderTypeLimit  = "limit"
-	orderTypeMarket = "market"
+	IntervalMin1         = "1min"
+	IntervalMin2         = "2min"
+	IntervalMin3         = "3min"
+	IntervalMin5         = "5min"
+	IntervalMin10        = "10min"
+	IntervalMin15        = "15min"
+	IntervalMin30        = "30min"
+	IntervalHour         = "hour"
+	IntervalDay          = "day"
+	IntervalWeek         = "week"
+	IntervalMonth        = "month"
+	OperationBuy         = "Buy"
+	OperationSell        = "Sell"
+	CurrencyRUB          = "RUB"
+	CurrencyUSD          = "USD"
+	TickerTCS            = "TCS"
+	TickerTCSG           = "TCSG"
+	FigiTCS              = "BBG005DXJS36"
+	FigiTCSG             = "BBG00QPYJ5H0"
+	statusError          = "Error"
+	statusDone           = "Done"
+	operationBuyCard     = "BuyCard"
+	operationDividend    = "Dividend"
+	operationTaxDividend = "TaxDividend"
+	operationCoupon      = "Coupon"
+	orderTypeLimit       = "limit"
+	orderTypeMarket      = "market"
 )
 
 type Client struct {
@@ -133,8 +138,6 @@ func (self *Client) GetAccounts() (rtAccounts []Account, roError error) {
 
 	lvUrl := self.mvUrl + "user/accounts"
 
-	loClient := http.Client{}
-
 	loRequest, roError := http.NewRequest(http.MethodGet, lvUrl, nil)
 
 	if roError != nil {
@@ -142,6 +145,8 @@ func (self *Client) GetAccounts() (rtAccounts []Account, roError error) {
 	}
 
 	loRequest.Header.Add("Authorization", "Bearer "+self.mvToken)
+
+	loClient := http.Client{}
 
 	loResponse, roError := loClient.Do(loRequest)
 
@@ -534,7 +539,6 @@ func (self *Client) GetCandles(ivTicker string, ivInterval string, ivFrom time.T
 		return
 	}
 
-
 	if lsResponse.Status == statusError {
 		roError = errors.New(lsResponse.Payload.Message)
 		return
@@ -670,6 +674,7 @@ func (self *Client) GetOperations(ivTicker string, ivFrom time.Time, ivTo time.T
 			return
 		}
 
+		// Workaround for TCSG share
 		if loInstrument.FIGI == FigiTCSG {
 			loInstrument.FIGI = FigiTCS
 		}
@@ -750,6 +755,7 @@ func (self *Client) GetOperations(ivTicker string, ivFrom time.Time, ivTo time.T
 
 	for _, lsResponseOperation := range lsResponse.Payload.Operations {
 
+		// Workaround for TCS share
 		if lsResponseOperation.Figi == FigiTCS &&
 			lsResponseOperation.Currency == CurrencyRUB {
 			lsResponseOperation.Figi = FigiTCSG
@@ -757,11 +763,13 @@ func (self *Client) GetOperations(ivTicker string, ivFrom time.Time, ivTo time.T
 
 		if ivTicker != "" {
 
+			// Workaround for TCS share
 			if ivTicker == TickerTCS &&
 				lsResponseOperation.Figi != FigiTCS {
 				continue
 			}
 
+			// Workaround for TCSG share
 			if ivTicker == TickerTCSG &&
 				lsResponseOperation.Figi != FigiTCSG {
 				continue
@@ -769,21 +777,21 @@ func (self *Client) GetOperations(ivTicker string, ivFrom time.Time, ivTo time.T
 
 		}
 
-		if lsResponseOperation.OperationType != "Buy" &&
-			lsResponseOperation.OperationType != "BuyCard" &&
-			lsResponseOperation.OperationType != "Sell" &&
-			lsResponseOperation.OperationType != "Dividend" &&
-			lsResponseOperation.OperationType != "TaxDividend" &&
-			lsResponseOperation.OperationType != "Coupon" {
+		if lsResponseOperation.OperationType != OperationBuy &&
+			lsResponseOperation.OperationType != operationBuyCard &&
+			lsResponseOperation.OperationType != OperationSell &&
+			lsResponseOperation.OperationType != operationDividend &&
+			lsResponseOperation.OperationType != operationTaxDividend &&
+			lsResponseOperation.OperationType != operationCoupon {
 			continue
 		}
 
-		if lsResponseOperation.Status != "Done" {
+		if lsResponseOperation.Status != statusDone {
 			continue
 		}
 
-		if lsResponseOperation.OperationType == "BuyCard" {
-			lsResponseOperation.OperationType = "Buy"
+		if lsResponseOperation.OperationType == operationBuyCard {
+			lsResponseOperation.OperationType = OperationBuy
 		}
 
 		lsOperation := Operation{}
