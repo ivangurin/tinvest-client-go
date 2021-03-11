@@ -212,6 +212,10 @@ func (self *Client) getInstruments(ivType string) (rtInstruments []Instrument, r
 
 	lvBody, roError := self.httpRequest(http.MethodGet, "market/"+ivType, nil, nil)
 
+	if roError != nil {
+		return
+	}
+
 	type ltsResponse struct {
 		TrackingID string `json:"trackingId"`
 		Status     string `json:"status"`
