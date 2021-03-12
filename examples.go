@@ -15,7 +15,7 @@ func Examples(ivToken string)  {
 	loClient.Init(ivToken)
 
 	// Get accounts
-	fmt.Println("Accounts:")
+	fmt.Println("My accounts:")
 
 	ltAccounts, loError := loClient.GetAccounts()
 
@@ -28,22 +28,8 @@ func Examples(ivToken string)  {
 		fmt.Printf("%+v\n", lsAccount)
 	}
 
-	// Get stock shares(similar to GetCurrecnies, GetBonds and GetETFs)
-	fmt.Println("Shares:")
-
-	ltShares, loError := loClient.GetShares()
-
-	if loError != nil {
-		fmt.Printf("Error: %+v\n", loError)
-		return
-	}
-
-	for _, lsShare := range ltShares {
-		fmt.Printf("%+v\n", lsShare)
-	}
-
 	// Get positions
-	fmt.Println("Positions:")
+	fmt.Println("My positions:")
 
 	ltPositions, loError := loClient.GetPositions()
 
@@ -57,7 +43,7 @@ func Examples(ivToken string)  {
 	}
 
 	// Get operations
-	fmt.Println("Operations:")
+	fmt.Println("My operations:")
 
 	ltOperations, loError := loClient.GetOperations("AAPL", time.Now().AddDate(0, 0, -365), time.Now() )
 
@@ -68,6 +54,34 @@ func Examples(ivToken string)  {
 
 	for _, lsOperation := range ltOperations {
 		fmt.Printf("%+v\n", lsOperation)
+	}
+
+	// Get stock shares(similar for GetCurrecnies, GetBonds and GetETFs)
+	fmt.Println("Shares:")
+
+	ltShares, loError := loClient.GetShares()
+
+	if loError != nil {
+		fmt.Printf("Error: %+v\n", loError)
+		return
+	}
+
+	for _, lsShare := range ltShares {
+		fmt.Printf("%+v\n", lsShare)
+	}
+
+	// Get candles
+	fmt.Println("Candles:")
+
+	ltCandles, loError := loClient.GetCandles("AAPL", IntervalDay, time.Now().AddDate(0, 0, -10), time.Now())
+
+	if loError != nil {
+		fmt.Printf("Error: %+v\n", loError)
+		return
+	}
+
+	for _, lsCandle := range ltCandles {
+		fmt.Printf("%+v\n", lsCandle)
 	}
 
 	// Create limit order
