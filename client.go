@@ -129,7 +129,7 @@ func (self *Client) Init(token string) {
 
 func (self *Client) GetAccounts() (rtAccounts []Account, roError error) {
 
-	lvBody, roError := self.httpRequest(http.MethodGet, "user/accounts1", nil, nil)
+	lvBody, roError := self.httpRequest(http.MethodGet, "user/accounts", nil, nil)
 
 	if roError != nil {
 		return
