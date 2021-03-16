@@ -129,7 +129,7 @@ func (self *Client) Init(token string) {
 
 func (self *Client) GetAccounts() (rtAccounts []Account, roError error) {
 
-	lvBody, roError := self.httpRequest(http.MethodGet, "user/accounts", nil, nil)
+	lvBody, roError := self.httpRequest(http.MethodGet, "user/accounts1", nil, nil)
 
 	if roError != nil {
 		return
@@ -139,8 +139,8 @@ func (self *Client) GetAccounts() (rtAccounts []Account, roError error) {
 		TrackingID string `json:"trackingId"`
 		Status     string `json:"status"`
 		Payload    struct {
-			Message  string `json:"message"`
 			Code     string `json:"code"`
+			Message  string `json:"message"`
 			Accounts []struct {
 				BrokerAccountType string `json:"brokerAccountType"`
 				BrokerAccountID   string `json:"brokerAccountId"`
@@ -220,8 +220,8 @@ func (self *Client) getInstruments(ivType string) (rtInstruments []Instrument, r
 		TrackingID string `json:"trackingId"`
 		Status     string `json:"status"`
 		Payload    struct {
-			Message     string `json:"message"`
 			Code        string `json:"code"`
+			Message     string `json:"message"`
 			Total       int    `json:"total"`
 			Instruments []struct {
 				Figi              string  `json:"figi"`
@@ -286,8 +286,8 @@ func (self *Client) GetInstrumentByTicker(ivTicker string) (rsInstrument Instrum
 		TrackingID string `json:"trackingId"`
 		Status     string `json:"status"`
 		Payload    struct {
-			Message     string `json:"message"`
 			Code        string `json:"code"`
+			Message     string `json:"message"`
 			Total       int    `json:"total"`
 			Instruments []struct {
 				Figi              string  `json:"figi"`
@@ -350,8 +350,8 @@ func (self *Client) GetInstrumentByFIGI(ivFIGI string) (rsInstrument Instrument,
 		TrackingID string `json:"trackingId"`
 		Status     string `json:"status"`
 		Payload    struct {
-			Message           string  `json:"message"`
 			Code              string  `json:"code"`
+			Message           string  `json:"message"`
 			Figi              string  `json:"figi"`
 			Ticker            string  `json:"ticker"`
 			Isin              string  `json:"isin"`
@@ -413,8 +413,8 @@ func (self *Client) GetCandles(ivTicker string, ivInterval string, ivFrom time.T
 		TrackingID string `json:"trackingId"`
 		Status     string `json:"status"`
 		Payload    struct {
-			Message  string `json:"message"`
 			Code     string `json:"code"`
+			Message  string `json:"message"`
 			Figi     string `json:"figi"`
 			Interval string `json:"interval"`
 			Candles  []struct {
@@ -486,8 +486,8 @@ func (self *Client) GetPositions() (rtPositions []Position, roError error) {
 		TrackingID string `json:"trackingId"`
 		Status     string `json:"status"`
 		Payload    struct {
-			Message   string `json:"message"`
 			Code      string `json:"code"`
+			Message   string `json:"message"`
 			Positions []struct {
 				Figi           string  `json:"figi"`
 				Ticker         string  `json:"ticker"`
@@ -584,8 +584,8 @@ func (self *Client) GetOperations(ivTicker string, ivFrom time.Time, ivTo time.T
 		TrackingID string `json:"trackingId"`
 		Status     string `json:"status"`
 		Payload    struct {
-			Message    string `json:"message"`
 			Code       string `json:"code"`
+			Message    string `json:"message"`
 			Operations []struct {
 				ID     string `json:"id"`
 				Status string `json:"status"`
@@ -705,8 +705,8 @@ func (self *Client) GetOrders() (rtOrders []Order, roError error) {
 		TrackingID string `json:"trackingId"`
 		Status     string `json:"status"`
 		Payload    struct {
-			Message string `json:"message"`
 			Code    string `json:"code"`
+			Message string `json:"message"`
 		} `json:"payload"`
 	}
 
@@ -834,11 +834,11 @@ func (self *Client) createOrder(ivType string, ivTicker string, ivOperation stri
 		TrackingID string `json:"trackingId"`
 		Status     string `json:"status"`
 		Payload    struct {
+			Code          string `json:"code"`
+			Message       string `json:"message"`
 			OrderID       string `json:"orderId"`
 			Operation     string `json:"operation"`
-			Status        string `json:"status"`
 			RejectReason  string `json:"rejectReason"`
-			Message       string `json:"message"`
 			RequestedLots int    `json:"requestedLots"`
 			ExecutedLots  int    `json:"executedLots"`
 			Commission    struct {
@@ -883,7 +883,7 @@ func (self *Client) CancelOrder(ivOrderID string) (roError error) {
 		TrackingID string `json:"trackingId"`
 		Status     string `json:"status"`
 		Payload    struct {
-			Status  string `json:"status"`
+			Code    string `json:"code"`
 			Message string `json:"message"`
 		} `json:"payload"`
 	}
@@ -929,10 +929,47 @@ func (self *Client) httpRequest(ivMethod string, ivPath string, ioParams url.Val
 		return
 	}
 
+	rvBody, roError = io.ReadAll(loResponse.Body)
+
+	if roError != nil {
+		return
+	}
+
 	defer loResponse.Body.Close()
 
 	if loResponse.StatusCode != http.StatusOK {
-		roError = errors.New(fmt.Sprintf("HTTP code %v - %v", loResponse.StatusCode, http.StatusText(loResponse.StatusCode)))
+
+		lvErrorText := ""
+
+		if len(rvBody) == 0 {
+
+			lvErrorText = fmt.Sprintf("%v (%v)", http.StatusText(loResponse.StatusCode), loResponse.StatusCode)
+
+		} else {
+
+			type ltsResponse struct {
+				TrackingID string `json:"trackingId"`
+				Status     string `json:"status"`
+				Payload    struct {
+					Code    string `json:"code"`
+					Message string `json:"message"`
+				} `json:"payload"`
+			}
+
+			lsResponse := ltsResponse{}
+
+			roError = json.Unmarshal(rvBody, &lsResponse)
+
+			if roError == nil {
+				lvErrorText = fmt.Sprintf("%v (%v)", lsResponse.Payload.Message, lsResponse.Payload.Code)
+			} else {
+				lvErrorText = string(rvBody)
+			}
+
+		}
+
+		roError = errors.New(lvErrorText)
+
 		return
 	}
 
