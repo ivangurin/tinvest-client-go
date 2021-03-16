@@ -929,13 +929,13 @@ func (self *Client) httpRequest(ivMethod string, ivPath string, ioParams url.Val
 		return
 	}
 
+	defer loResponse.Body.Close()
+
 	rvBody, roError = io.ReadAll(loResponse.Body)
 
 	if roError != nil {
 		return
 	}
-
-	defer loResponse.Body.Close()
 
 	if loResponse.StatusCode != http.StatusOK {
 
@@ -970,12 +970,6 @@ func (self *Client) httpRequest(ivMethod string, ivPath string, ioParams url.Val
 
 		roError = errors.New(lvErrorText)
 
-		return
-	}
-
-	rvBody, roError = io.ReadAll(loResponse.Body)
-
-	if roError != nil {
 		return
 	}
 
