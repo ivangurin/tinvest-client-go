@@ -91,6 +91,7 @@ type Position struct {
 	Type     string
 	Text     string
 	Quantity float64
+	Blocked  float64
 	Lots     int
 	Currency string
 	Price    float64
@@ -494,7 +495,7 @@ func (self *Client) GetPositions() (rtPositions []Position, roError error) {
 				Isin           string  `json:"isin"`
 				InstrumentType string  `json:"instrumentType"`
 				Balance        float64 `json:"balance"`
-				Blocked        int     `json:"blocked"`
+				Blocked        float64 `json:"blocked"`
 				ExpectedYield  struct {
 					Currency string  `json:"currency"`
 					Value    float64 `json:"value"`
@@ -535,6 +536,7 @@ func (self *Client) GetPositions() (rtPositions []Position, roError error) {
 		lsPosition.Type = lsResponsePosition.InstrumentType
 		lsPosition.Text = lsResponsePosition.Name
 		lsPosition.Quantity = lsResponsePosition.Balance
+		lsPosition.Blocked = lsResponsePosition.Blocked
 		lsPosition.Lots = lsResponsePosition.Lots
 		lsPosition.Currency = lsResponsePosition.AveragePositionPrice.Currency
 		lsPosition.Price = lsResponsePosition.AveragePositionPrice.Value
