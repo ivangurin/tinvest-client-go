@@ -36,6 +36,7 @@ const (
 	CandleTypeRed         = "Red"
 	TickerTCS             = "TCS"
 	TickerTCSG            = "TCSG"
+	FigiAAPL              = "BBG000B9XRY4"
 	FigiTCS               = "BBG005DXJS36"
 	FigiTCSG              = "BBG00QPYJ5H0"
 	OperationBuy          = "Buy"
@@ -52,79 +53,86 @@ const (
 )
 
 type Client struct {
-	mvUrl   string
-	mvToken string
+	mvUrl     string
+	mvToken   string
+	mvAccount string
 }
 
 type Account struct {
-	ID   string
-	Text string
+	ID   string `json:"id"`
+	Text string `json:"text"`
 }
 
 type Instrument struct {
-	Type              string
-	Ticker            string
-	FIGI              string
-	ISIN              string
-	Text              string
-	Currency          string
-	Lot               int
-	MinPriceIncrement float64
+	Type              string  `json:"type"`
+	Ticker            string  `json:"ticker"`
+	FIGI              string  `json:"figi"`
+	ISIN              string  `json:"isin"`
+	Text              string  `json:"text"`
+	Currency          string  `json:"currency"`
+	Lot               int     `json:"lot"`
+	MinPriceIncrement float64 `json:"minPriceIncrement"`
 }
 
 type Candle struct {
-	Time       time.Time
-	High       float64
-	Open       float64
-	Close      float64
-	Low        float64
-	Volume     float64
-	ShadowHigh float64
-	ShadowLow  float64
-	Body       float64
-	Type       string
+	Time       time.Time `json:"time"`
+	High       float64   `json:"high"`
+	Open       float64   `json:"open"`
+	Close      float64   `json:"close"`
+	Low        float64   `json:"low"`
+	Volume     float64   `json:"volume"`
+	ShadowHigh float64   `json:"shadowHigh"`
+	ShadowLow  float64   `json:"shadowLow"`
+	Body       float64   `json:"body"`
+	Type       string    `json:"type"`
 }
 
 type Position struct {
-	FIGI     string
-	Ticker   string
-	Type     string
-	Text     string
-	Quantity float64
-	Blocked  float64
-	Lots     int
-	Currency string
-	Price    float64
-	Profit   float64
+	FIGI     string  `json:"figi"`
+	Ticker   string  `json:"ticker"`
+	Type     string  `json:"type"`
+	Text     string  `json:"text"`
+	Quantity float64 `json:"quantity"`
+	Blocked  float64 `json:"blocked"`
+	Lots     int     `json:"lots"`
+	Currency string  `json:"currency"`
+	Price    float64 `json:"price"`
+	Profit   float64 `json:"profit"`
 }
 
 type Operation struct {
-	ID         string
-	Type       string
-	FIGI       string
-	Quantity   float64
-	Price      float64
-	Value      float64
-	Commission float64
-	Currency   string
-	Date       time.Time
+	ID         string    `json:"id"`
+	Time       time.Time `json:"type"`
+	Type       string    `json:"type"`
+	FIGI       string    `json:"figi"`
+	Quantity   float64   `json:"quantity"`
+	Price      float64   `json:"price"`
+	Value      float64   `json:"value"`
+	Commission float64   `json:"commission"`
+	Currency   string    `json:"currecny"`
 }
 
 type Order struct {
-	ID            string
-	FIGI          string
-	Type          string
-	Operation     string
-	Price         float64
-	Status        string
-	RequestedLots int
-	ExecutedLots  int
+	ID            string  `json:"id"`
+	FIGI          string  `json:"figi"`
+	Type          string  `json:"type"`
+	Operation     string  `json:"operation"`
+	Price         float64 `json:"price"`
+	Status        string  `json:"status"`
+	RequestedLots int     `json:"requestedLots"`
+	ExecutedLots  int     `json:"executedLots"`
 }
 
 func (self *Client) Init(token string) {
 
 	self.mvUrl = "https://api-invest.tinkoff.ru/openapi/"
 	self.mvToken = token
+
+}
+
+func (self *Client) setAccount(ivId string) {
+
+	self.mvAccount = ivId
 
 }
 
@@ -204,6 +212,41 @@ func (self *Client) GetBonds() (rtBonds []Instrument, roError error) {
 func (self *Client) GetETFs() (rtETFs []Instrument, roError error) {
 
 	rtETFs, roError = self.getInstruments("etfs")
+
+	return
+
+}
+
+func (self *Client) GetInstruments() (rtInstruments []Instrument, roError error) {
+
+	ltCurrencies, roError := self.GetCurrencies()
+
+	if roError != nil{
+		return
+	}
+
+	ltShares, roError := self.GetShares()
+
+	if roError != nil{
+		return
+	}
+
+	ltBonds, roError := self.GetBonds()
+
+	if roError != nil{
+		return
+	}
+
+	ltETFs, roError := self.GetETFs()
+
+	if roError != nil{
+		return
+	}
+
+	rtInstruments = append(rtInstruments, ltCurrencies...)
+	rtInstruments = append(rtInstruments, ltShares...)
+	rtInstruments = append(rtInstruments, ltBonds...)
+	rtInstruments = append(rtInstruments, ltETFs...)
 
 	return
 
@@ -389,17 +432,11 @@ func (self *Client) GetInstrumentByFIGI(ivFIGI string) (rsInstrument Instrument,
 
 }
 
-func (self *Client) GetCandles(ivTicker string, ivInterval string, ivFrom time.Time, ivTo time.Time) (rtCandles []Candle, roError error) {
-
-	loInstrument, roError := self.GetInstrumentByTicker(ivTicker)
-
-	if roError != nil {
-		return
-	}
+func (self *Client) GetCandles(ivFIGI string, ivInterval string, ivFrom time.Time, ivTo time.Time) (rtCandles []Candle, roError error) {
 
 	loParams := url.Values{}
 
-	loParams.Add("figi", loInstrument.FIGI)
+	loParams.Add("figi", ivFIGI)
 	loParams.Add("interval", ivInterval)
 	loParams.Add("from", ivFrom.Format(time.RFC3339))
 	loParams.Add("to", ivTo.Format(time.RFC3339))
@@ -550,29 +587,23 @@ func (self *Client) GetPositions() (rtPositions []Position, roError error) {
 
 }
 
-func (self *Client) GetOperations(ivTicker string, ivFrom time.Time, ivTo time.Time) (rtOperations []Operation, roError error) {
-
-	loInstrument := Instrument{}
+func (self *Client) GetOperations(ivFIGI string, ivFrom time.Time, ivTo time.Time) (rtOperations []Operation, roError error) {
 
 	loParams := url.Values{}
 
 	loParams.Add("from", ivFrom.Format(time.RFC3339))
 	loParams.Add("to", ivTo.Format(time.RFC3339))
 
-	if ivTicker != "" {
+	if ivFIGI != "" {
 
-		loInstrument, roError = self.GetInstrumentByTicker(ivTicker)
-
-		if roError != nil {
-			return
-		}
+		lvFIGI := ivFIGI
 
 		// Workaround for TCSG share
-		if loInstrument.FIGI == FigiTCSG {
-			loInstrument.FIGI = FigiTCS
+		if lvFIGI == FigiTCSG {
+			lvFIGI = FigiTCS
 		}
 
-		loParams.Add("figi", loInstrument.FIGI)
+		loParams.Add("figi", lvFIGI)
 
 	}
 
@@ -636,16 +667,16 @@ func (self *Client) GetOperations(ivTicker string, ivFrom time.Time, ivTo time.T
 			lsResponseOperation.Figi = FigiTCSG
 		}
 
-		if ivTicker != "" {
+		if ivFIGI != "" {
 
 			// Workaround for TCS share
-			if ivTicker == TickerTCS &&
+			if ivFIGI == FigiTCS &&
 				lsResponseOperation.Figi != FigiTCS {
 				continue
 			}
 
 			// Workaround for TCSG share
-			if ivTicker == TickerTCSG &&
+			if ivFIGI == FigiTCSG &&
 				lsResponseOperation.Figi != FigiTCSG {
 				continue
 			}
@@ -672,7 +703,7 @@ func (self *Client) GetOperations(ivTicker string, ivFrom time.Time, ivTo time.T
 		lsOperation.Type = lsResponseOperation.OperationType
 		lsOperation.FIGI = lsResponseOperation.Figi
 		lsOperation.Currency = lsResponseOperation.Currency
-		lsOperation.Date = lsResponseOperation.Date
+		lsOperation.Time = lsResponseOperation.Date
 		lsOperation.Quantity = lsResponseOperation.QuantityExecuted
 		lsOperation.Price = math.Abs(lsResponseOperation.Price)
 		lsOperation.Value = math.Abs(lsResponseOperation.Payment)
@@ -683,7 +714,7 @@ func (self *Client) GetOperations(ivTicker string, ivFrom time.Time, ivTo time.T
 	}
 
 	sort.Slice(rtOperations, func(i, j int) bool {
-		return rtOperations[i].Date.Before(rtOperations[j].Date)
+		return rtOperations[i].Time.Before(rtOperations[j].Time)
 	})
 
 	return
@@ -780,33 +811,27 @@ func (self *Client) GetOrders() (rtOrders []Order, roError error) {
 
 }
 
-func (self *Client) CreateLimitOrder(ivTicker string, ivOperation string, ivLots int, ivPrice float64) (rvOrderID string, roError error) {
+func (self *Client) CreateLimitOrder(ivFIGI string, ivOperation string, ivLots int, ivPrice float64) (rvOrderID string, roError error) {
 
-	rvOrderID, roError = self.createOrder(orderTypeLimit, ivTicker, ivOperation, ivLots, ivPrice)
-
-	return
-
-}
-
-func (self *Client) CreateMarketOrder(ivTicker string, ivOperation string, ivLots int) (rvOrderID string, roError error) {
-
-	rvOrderID, roError = self.createOrder(orderTypeMarket, ivTicker, ivOperation, ivLots, 0)
+	rvOrderID, roError = self.createOrder(orderTypeLimit, ivFIGI, ivOperation, ivLots, ivPrice)
 
 	return
 
 }
 
-func (self *Client) createOrder(ivType string, ivTicker string, ivOperation string, ivLots int, ivPrice float64) (rvOrderID string, roError error) {
+func (self *Client) CreateMarketOrder(ivFIGI string, ivOperation string, ivLots int) (rvOrderID string, roError error) {
 
-	loInstrument, roError := self.GetInstrumentByTicker(ivTicker)
+	rvOrderID, roError = self.createOrder(orderTypeMarket, ivFIGI, ivOperation, ivLots, 0)
 
-	if roError != nil {
-		return
-	}
+	return
+
+}
+
+func (self *Client) createOrder(ivType string, ivFIGI string, ivOperation string, ivLots int, ivPrice float64) (rvOrderID string, roError error) {
 
 	loParams := url.Values{}
 
-	loParams.Add("figi", loInstrument.FIGI)
+	loParams.Add("figi", ivFIGI)
 
 	type ltsBody struct {
 		Operation string  `json:"operation"`

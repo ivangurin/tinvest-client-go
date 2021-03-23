@@ -45,7 +45,7 @@ func Examples(ivToken string)  {
 	// Get operations
 	fmt.Println("My operations:")
 
-	ltOperations, loError := loClient.GetOperations("AAPL", time.Now().AddDate(0, 0, -365), time.Now() )
+	ltOperations, loError := loClient.GetOperations(FigiAAPL, time.Now().AddDate(0, 0, -365), time.Now() )
 
 	if loError != nil {
 		fmt.Printf("Error: %+v\n", loError)
@@ -73,7 +73,7 @@ func Examples(ivToken string)  {
 	// Get candles
 	fmt.Println("Candles:")
 
-	ltCandles, loError := loClient.GetCandles("AAPL", IntervalDay, time.Now().AddDate(0, 0, -10), time.Now())
+	ltCandles, loError := loClient.GetCandles(FigiAAPL, IntervalDay, time.Now().AddDate(0, 0, -10), time.Now())
 
 	if loError != nil {
 		fmt.Printf("Error: %+v\n", loError)
@@ -87,7 +87,7 @@ func Examples(ivToken string)  {
 	// Create limit order
 	fmt.Println("Create limit order:")
 
-	lvOrderID, loError := loClient.CreateLimitOrder("AAPL", OperationBuy, 1, 100 )
+	lvOrderID, loError := loClient.CreateLimitOrder(FigiAAPL, OperationBuy, 1, 100 )
 
 	if loError != nil {
 		fmt.Printf("Error: %+v\n", loError)
