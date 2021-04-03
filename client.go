@@ -109,7 +109,7 @@ type Operation struct {
 	Price      float64   `json:"price"`
 	Value      float64   `json:"value"`
 	Commission float64   `json:"commission"`
-	Currency   string    `json:"currecny"`
+	Currency   string    `json:"currency"`
 }
 
 type Order struct {
