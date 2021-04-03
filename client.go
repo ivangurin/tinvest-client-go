@@ -102,7 +102,7 @@ type Position struct {
 
 type Operation struct {
 	ID         string    `json:"id"`
-	Time       time.Time `json:"type"`
+	Time       time.Time `json:"time"`
 	Type       string    `json:"type"`
 	FIGI       string    `json:"figi"`
 	Quantity   float64   `json:"quantity"`
@@ -123,22 +123,22 @@ type Order struct {
 	ExecutedLots  int     `json:"executedLots"`
 }
 
-func (self *Client) Init(token string) {
+func (c *Client) Init(token string) {
 
-	self.mvUrl = "https://api-invest.tinkoff.ru/openapi/"
-	self.mvToken = token
-
-}
-
-func (self *Client) setAccount(ivId string) {
-
-	self.mvAccount = ivId
+	c.mvUrl = "https://api-invest.tinkoff.ru/openapi/"
+	c.mvToken = token
 
 }
 
-func (self *Client) GetAccounts() (rtAccounts []Account, roError error) {
+func (c *Client) setAccount(ivId string) {
 
-	lvBody, roError := self.httpRequest(http.MethodGet, "user/accounts", nil, nil)
+	c.mvAccount = ivId
+
+}
+
+func (c *Client) GetAccounts() (rtAccounts []Account, roError error) {
+
+	lvBody, roError := c.httpRequest(http.MethodGet, "user/accounts", nil, nil)
 
 	if roError != nil {
 		return
@@ -185,61 +185,61 @@ func (self *Client) GetAccounts() (rtAccounts []Account, roError error) {
 
 }
 
-func (self *Client) GetCurrencies() (rtCurrencies []Instrument, roError error) {
+func (c *Client) GetCurrencies() (rtCurrencies []Instrument, roError error) {
 
-	rtCurrencies, roError = self.getInstruments("currencies")
-
-	return
-
-}
-
-func (self *Client) GetShares() (rtShares []Instrument, roError error) {
-
-	rtShares, roError = self.getInstruments("stocks")
+	rtCurrencies, roError = c.getInstruments("currencies")
 
 	return
 
 }
 
-func (self *Client) GetBonds() (rtBonds []Instrument, roError error) {
+func (c *Client) GetShares() (rtShares []Instrument, roError error) {
 
-	rtBonds, roError = self.getInstruments("bonds")
-
-	return
-
-}
-
-func (self *Client) GetETFs() (rtETFs []Instrument, roError error) {
-
-	rtETFs, roError = self.getInstruments("etfs")
+	rtShares, roError = c.getInstruments("stocks")
 
 	return
 
 }
 
-func (self *Client) GetInstruments() (rtInstruments []Instrument, roError error) {
+func (c *Client) GetBonds() (rtBonds []Instrument, roError error) {
 
-	ltCurrencies, roError := self.GetCurrencies()
+	rtBonds, roError = c.getInstruments("bonds")
 
-	if roError != nil{
+	return
+
+}
+
+func (c *Client) GetETFs() (rtETFs []Instrument, roError error) {
+
+	rtETFs, roError = c.getInstruments("etfs")
+
+	return
+
+}
+
+func (c *Client) GetInstruments() (rtInstruments []Instrument, roError error) {
+
+	ltCurrencies, roError := c.GetCurrencies()
+
+	if roError != nil {
 		return
 	}
 
-	ltShares, roError := self.GetShares()
+	ltShares, roError := c.GetShares()
 
-	if roError != nil{
+	if roError != nil {
 		return
 	}
 
-	ltBonds, roError := self.GetBonds()
+	ltBonds, roError := c.GetBonds()
 
-	if roError != nil{
+	if roError != nil {
 		return
 	}
 
-	ltETFs, roError := self.GetETFs()
+	ltETFs, roError := c.GetETFs()
 
-	if roError != nil{
+	if roError != nil {
 		return
 	}
 
@@ -252,9 +252,9 @@ func (self *Client) GetInstruments() (rtInstruments []Instrument, roError error)
 
 }
 
-func (self *Client) getInstruments(ivType string) (rtInstruments []Instrument, roError error) {
+func (c *Client) getInstruments(ivType string) (rtInstruments []Instrument, roError error) {
 
-	lvBody, roError := self.httpRequest(http.MethodGet, "market/"+ivType, nil, nil)
+	lvBody, roError := c.httpRequest(http.MethodGet, "market/"+ivType, nil, nil)
 
 	if roError != nil {
 		return
@@ -314,13 +314,13 @@ func (self *Client) getInstruments(ivType string) (rtInstruments []Instrument, r
 
 }
 
-func (self *Client) GetInstrumentByTicker(ivTicker string) (rsInstrument Instrument, roError error) {
+func (c *Client) GetInstrumentByTicker(ivTicker string) (rsInstrument Instrument, roError error) {
 
 	loParams := url.Values{}
 
 	loParams.Add("ticker", ivTicker)
 
-	lvBody, roError := self.httpRequest(http.MethodGet, "market/search/by-ticker", loParams, nil)
+	lvBody, roError := c.httpRequest(http.MethodGet, "market/search/by-ticker", loParams, nil)
 
 	if roError != nil {
 		return
@@ -378,13 +378,13 @@ func (self *Client) GetInstrumentByTicker(ivTicker string) (rsInstrument Instrum
 
 }
 
-func (self *Client) GetInstrumentByFIGI(ivFIGI string) (rsInstrument Instrument, roError error) {
+func (c *Client) GetInstrumentByFIGI(ivFIGI string) (rsInstrument Instrument, roError error) {
 
 	loParams := url.Values{}
 
 	loParams.Add("figi", ivFIGI)
 
-	lvBody, roError := self.httpRequest(http.MethodGet, "market/search/by-figi", loParams, nil)
+	lvBody, roError := c.httpRequest(http.MethodGet, "market/search/by-figi", loParams, nil)
 
 	if roError != nil {
 		return
@@ -432,7 +432,7 @@ func (self *Client) GetInstrumentByFIGI(ivFIGI string) (rsInstrument Instrument,
 
 }
 
-func (self *Client) GetCandles(ivFIGI string, ivInterval string, ivFrom time.Time, ivTo time.Time) (rtCandles []Candle, roError error) {
+func (c *Client) GetCandles(ivFIGI string, ivInterval string, ivFrom time.Time, ivTo time.Time) (rtCandles []Candle, roError error) {
 
 	loParams := url.Values{}
 
@@ -441,7 +441,7 @@ func (self *Client) GetCandles(ivFIGI string, ivInterval string, ivFrom time.Tim
 	loParams.Add("from", ivFrom.Format(time.RFC3339))
 	loParams.Add("to", ivTo.Format(time.RFC3339))
 
-	lvBody, roError := self.httpRequest(http.MethodGet, "market/candles", loParams, nil)
+	lvBody, roError := c.httpRequest(http.MethodGet, "market/candles", loParams, nil)
 
 	if roError != nil {
 		return
@@ -512,9 +512,9 @@ func (self *Client) GetCandles(ivFIGI string, ivInterval string, ivFrom time.Tim
 
 }
 
-func (self *Client) GetPositions() (rtPositions []Position, roError error) {
+func (c *Client) GetPositions() (rtPositions []Position, roError error) {
 
-	lvBody, roError := self.httpRequest(http.MethodGet, "portfolio", nil, nil)
+	lvBody, roError := c.httpRequest(http.MethodGet, "portfolio", nil, nil)
 
 	if roError != nil {
 		return
@@ -587,7 +587,7 @@ func (self *Client) GetPositions() (rtPositions []Position, roError error) {
 
 }
 
-func (self *Client) GetOperations(ivFIGI string, ivFrom time.Time, ivTo time.Time) (rtOperations []Operation, roError error) {
+func (c *Client) GetOperations(ivFIGI string, ivFrom time.Time, ivTo time.Time) (rtOperations []Operation, roError error) {
 
 	loParams := url.Values{}
 
@@ -607,7 +607,7 @@ func (self *Client) GetOperations(ivFIGI string, ivFrom time.Time, ivTo time.Tim
 
 	}
 
-	lvBody, roError := self.httpRequest(http.MethodGet, "operations", loParams, nil)
+	lvBody, roError := c.httpRequest(http.MethodGet, "operations", loParams, nil)
 
 	if roError != nil {
 		return
@@ -721,9 +721,9 @@ func (self *Client) GetOperations(ivFIGI string, ivFrom time.Time, ivTo time.Tim
 
 }
 
-func (self *Client) GetOrders() (rtOrders []Order, roError error) {
+func (c *Client) GetOrders() (rtOrders []Order, roError error) {
 
-	lvBody, roError := self.httpRequest(http.MethodGet, "orders", nil, nil)
+	lvBody, roError := c.httpRequest(http.MethodGet, "orders", nil, nil)
 
 	if roError != nil {
 		return
@@ -811,23 +811,23 @@ func (self *Client) GetOrders() (rtOrders []Order, roError error) {
 
 }
 
-func (self *Client) CreateLimitOrder(ivFIGI string, ivOperation string, ivLots int, ivPrice float64) (rvOrderID string, roError error) {
+func (c *Client) CreateLimitOrder(ivFIGI string, ivOperation string, ivLots int, ivPrice float64) (rvOrderID string, roError error) {
 
-	rvOrderID, roError = self.createOrder(orderTypeLimit, ivFIGI, ivOperation, ivLots, ivPrice)
-
-	return
-
-}
-
-func (self *Client) CreateMarketOrder(ivFIGI string, ivOperation string, ivLots int) (rvOrderID string, roError error) {
-
-	rvOrderID, roError = self.createOrder(orderTypeMarket, ivFIGI, ivOperation, ivLots, 0)
+	rvOrderID, roError = c.createOrder(orderTypeLimit, ivFIGI, ivOperation, ivLots, ivPrice)
 
 	return
 
 }
 
-func (self *Client) createOrder(ivType string, ivFIGI string, ivOperation string, ivLots int, ivPrice float64) (rvOrderID string, roError error) {
+func (c *Client) CreateMarketOrder(ivFIGI string, ivOperation string, ivLots int) (rvOrderID string, roError error) {
+
+	rvOrderID, roError = c.createOrder(orderTypeMarket, ivFIGI, ivOperation, ivLots, 0)
+
+	return
+
+}
+
+func (c *Client) createOrder(ivType string, ivFIGI string, ivOperation string, ivLots int, ivPrice float64) (rvOrderID string, roError error) {
 
 	loParams := url.Values{}
 
@@ -851,7 +851,7 @@ func (self *Client) createOrder(ivType string, ivFIGI string, ivOperation string
 		return
 	}
 
-	lvBody, roError = self.httpRequest(http.MethodPost, "orders/"+ivType+"-order", loParams, lvBody)
+	lvBody, roError = c.httpRequest(http.MethodPost, "orders/"+ivType+"-order", loParams, lvBody)
 
 	if roError != nil {
 		return
@@ -894,13 +894,13 @@ func (self *Client) createOrder(ivType string, ivFIGI string, ivOperation string
 
 }
 
-func (self *Client) CancelOrder(ivOrderID string) (roError error) {
+func (c *Client) CancelOrder(ivOrderID string) (roError error) {
 
 	loParams := url.Values{}
 
 	loParams.Add("orderId", ivOrderID)
 
-	lvBody, roError := self.httpRequest(http.MethodPost, "orders/cancel", loParams, nil)
+	lvBody, roError := c.httpRequest(http.MethodPost, "orders/cancel", loParams, nil)
 
 	if roError != nil {
 		return
@@ -932,9 +932,13 @@ func (self *Client) CancelOrder(ivOrderID string) (roError error) {
 
 }
 
-func (self *Client) httpRequest(ivMethod string, ivPath string, ioParams url.Values, ivBody []byte) (rvBody []byte, roError error) {
+func (c *Client) httpRequest(ivMethod string, ivPath string, ioParams url.Values, ivBody []byte) (rvBody []byte, roError error) {
 
-	lvUrl := self.mvUrl + ivPath
+	lvUrl := c.mvUrl + ivPath
+
+	if c.mvAccount != "" {
+		ioParams.Add("brokerAccountId", c.mvAccount)
+	}
 
 	if ioParams != nil {
 		lvUrl = lvUrl + "?" + ioParams.Encode()
@@ -946,7 +950,7 @@ func (self *Client) httpRequest(ivMethod string, ivPath string, ioParams url.Val
 		return
 	}
 
-	loRequest.Header.Add("Authorization", "Bearer "+self.mvToken)
+	loRequest.Header.Add("Authorization", "Bearer "+c.mvToken)
 
 	loClient := http.Client{}
 
