@@ -14,42 +14,43 @@ import (
 )
 
 const (
-	CurrencyRUB           = "RUB"
-	CurrencyUSD           = "USD"
-	CurrencyEUR           = "EUR"
-	IntervalMin1          = "1min"
-	IntervalMin2          = "2min"
-	IntervalMin3          = "3min"
-	IntervalMin5          = "5min"
-	IntervalMin10         = "10min"
-	IntervalMin15         = "15min"
-	IntervalMin30         = "30min"
-	IntervalHour          = "hour"
-	IntervalDay           = "day"
-	IntervalWeek          = "week"
-	IntervalMonth         = "month"
-	InstumentTypeCurrency = "Currency"
-	InstumentTypeShare    = "Stock"
-	InstumentTypeBond     = "Bond"
-	InstumentTypeETF      = "Etf"
-	CandleTypeGreen       = "Green"
-	CandleTypeRed         = "Red"
-	TickerTCS             = "TCS"
-	TickerTCSG            = "TCSG"
-	FigiAAPL              = "BBG000B9XRY4"
-	FigiTCS               = "BBG005DXJS36"
-	FigiTCSG              = "BBG00QPYJ5H0"
-	OperationBuy          = "Buy"
-	OperationSell         = "Sell"
-	OperationBuyCard      = "BuyCard"
-	OperationDividend     = "Dividend"
-	OperationTaxDividend  = "TaxDividend"
-	OperationCoupon       = "Coupon"
-	OperationTaxCoupon    = "TaxCoupon"
-	statusError           = "Error"
-	statusDone            = "Done"
-	orderTypeLimit        = "limit"
-	orderTypeMarket       = "market"
+	CurrencyRUB               = "RUB"
+	CurrencyUSD               = "USD"
+	CurrencyEUR               = "EUR"
+	IntervalMin1              = "1min"
+	IntervalMin2              = "2min"
+	IntervalMin3              = "3min"
+	IntervalMin5              = "5min"
+	IntervalMin10             = "10min"
+	IntervalMin15             = "15min"
+	IntervalMin30             = "30min"
+	IntervalHour              = "hour"
+	IntervalDay               = "day"
+	IntervalWeek              = "week"
+	IntervalMonth             = "month"
+	InstumentTypeCurrency     = "Currency"
+	InstumentTypeShare        = "Stock"
+	InstumentTypeBond         = "Bond"
+	InstumentTypeETF          = "Etf"
+	CandleTypeGreen           = "Green"
+	CandleTypeRed             = "Red"
+	TickerTCS                 = "TCS"
+	TickerTCSG                = "TCSG"
+	FigiAAPL                  = "BBG000B9XRY4"
+	FigiTCS                   = "BBG005DXJS36"
+	FigiTCSG                  = "BBG00QPYJ5H0"
+	OperationBuy              = "Buy"
+	OperationSell             = "Sell"
+	OperationBuyCard          = "BuyCard"
+	OperationDividend         = "Dividend"
+	OperationTaxDividend      = "TaxDividend"
+	OperationCoupon           = "Coupon"
+	OperationTaxCoupon        = "TaxCoupon"
+	OperationBrokerCommission = "BrokerCommission"
+	statusError               = "Error"
+	statusDone                = "Done"
+	orderTypeLimit            = "limit"
+	orderTypeMarket           = "market"
 )
 
 type Client struct {
@@ -683,18 +684,16 @@ func (c *Client) GetOperations(ivFIGI string, ivFrom time.Time, ivTo time.Time) 
 
 		}
 
-		if lsResponseOperation.OperationType != OperationBuy &&
-			lsResponseOperation.OperationType != OperationBuyCard &&
-			lsResponseOperation.OperationType != OperationSell &&
-			lsResponseOperation.OperationType != OperationDividend &&
-			lsResponseOperation.OperationType != OperationTaxDividend &&
-			lsResponseOperation.OperationType != OperationCoupon &&
-			lsResponseOperation.OperationType != OperationTaxCoupon {
+		if lsResponseOperation.Status != statusDone {
 			continue
 		}
 
-		if lsResponseOperation.Status != statusDone {
+		if lsResponseOperation.OperationType == OperationBrokerCommission {
 			continue
+		}
+
+		if lsResponseOperation.OperationType == OperationBuyCard {
+			lsResponseOperation.OperationType = OperationBuy
 		}
 
 		lsOperation := Operation{}
